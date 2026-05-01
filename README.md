@@ -26,3 +26,29 @@ La adopción de **TypeScript** tanto en Frontend como en Backend asegura un ento
 
 ## Justificación del Proyecto
 La elección de MyWardrobe responde a la creciente digitalización de los servicios personales. En un mercado saturado de consumo rápido (fast fashion), existe una necesidad real de herramientas que ayuden al usuario a valorar y organizar lo que ya posee. Técnicamente, el proyecto permite demostrar competencias avanzadas, desde la gestión compleja de estados en el frontend hasta la arquitectura de microservicios o monolítica y bases de datos relacionales en el backend.
+
+---
+
+## Instrucciones de Arranque (Paso a Paso)
+
+Para arrancar y probar la aplicación en tu entorno local, sigue estas instrucciones:
+
+### 1. Preparación de la Base de Datos
+1. Abre **XAMPP Control Panel**.
+2. Inicia el módulo **MySQL**.
+3. Abre tu navegador y ve a `http://localhost/phpmyadmin` (o usa la consola de MySQL).
+4. Crea una nueva base de datos vacía llamada `mywardrobe`. *(Nota: Sequelize creará las tablas automáticamente al conectarse)*.
+
+### 2. Arrancar el Backend (Servidor API)
+1. Abre una terminal y navega hasta la carpeta del backend: `cd backend`
+2. Instala las dependencias (solo la primera vez): `npm install`
+3. Inicia el servidor en modo desarrollo: `npm run dev`
+4. Deberías ver en la terminal que el servidor corre en el puerto 3000 y que la base de datos se sincronizó.
+
+### 3. Arrancar el Frontend (Interfaz Web)
+1. Abre **una nueva terminal** (manteniendo el backend activo) y navega a la carpeta del frontend: `cd frontend`
+2. Instala las dependencias (solo la primera vez): `npm install`
+3. Inicia la aplicación React con Vite: `npm run dev`
+4. Abre la URL local que muestra la terminal en tu navegador (habitualmente `http://localhost:5173`).
+
+¡Listo! Ya puedes utilizar la interfaz para crear una cuenta e iniciar sesión en **MyWardrobe**.
