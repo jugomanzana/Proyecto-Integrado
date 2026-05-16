@@ -10,11 +10,12 @@
 - Personas indecisas que no consigan elegir qué ponerse cada día.
 
 ## Funcionalidades Principales
-- **Inventario Digital:** Subida y gestión de prendas con metadatos (tipo, color, temporada, tejido).
-- **Generador de Outfits:** Algoritmo que sugiere combinaciones de ropa coherentes para eventos o el día a día.
-- **Calendario de Estilo:** Planificación semanal de qué ropa se va a utilizar.
-- **Filtros Avanzados:** Búsqueda rápida por etiquetas o estados (lavandería, prestado, disponible).
-- **Panel de Tendencias:** Espacio para recibir recomendaciones de nuevas prendas basadas en el estilo actual del usuario.
+- **Inventario Digital:** Subida y gestión de prendas con almacenamiento de imágenes reales (Multer).
+- **Generador y Gestor de Outfits:** Creación visual e ilimitada de combinaciones de prendas.
+- **Paginación Dinámica y Filtros:** Búsqueda en tiempo real y paginación (Cargar más) en todo el armario.
+- **Gestión de Perfil Seguro:** Actualización de datos de usuario y cambio de contraseñas seguras mediante bcrypt.
+- **Calendario de Estilo (Futuro):** Planificación semanal de qué ropa se va a utilizar.
+- **Panel de Tendencias (Futuro):** Espacio para recibir recomendaciones de nuevas prendas basadas en el estilo actual del usuario.
 
 ## Arquitectura del Sistema y Tecnologías
 - **Frontend:** Aplicación Web desarrollada en **React.js** con **TypeScript** utilizando **Vite** como entorno de construcción.
@@ -39,16 +40,30 @@ Para arrancar y probar la aplicación en tu entorno local, sigue estas instrucci
 3. Abre tu navegador y ve a `http://localhost/phpmyadmin` (o usa la consola de MySQL).
 4. Crea una nueva base de datos vacía llamada `mywardrobe`. *(Nota: Sequelize creará las tablas automáticamente al conectarse)*.
 
-### 2. Arrancar el Backend (Servidor API)
+### 2. Configuración del Backend (Servidor API)
 1. Abre una terminal y navega hasta la carpeta del backend: `cd backend`
 2. Instala las dependencias (solo la primera vez): `npm install`
-3. Inicia el servidor en modo desarrollo: `npm run dev`
-4. Deberías ver en la terminal que el servidor corre en el puerto 3000 y que la base de datos se sincronizó.
+3. Crea un archivo `.env` en la raíz de `backend/` tomando como base `.env.example`. Asegúrate de rellenar:
+   ```env
+   PORT=3000
+   DB_NAME=mywardrobe
+   DB_USER=root
+   DB_PASSWORD=
+   DB_HOST=localhost
+   JWT_SECRET=tu_secreto_super_seguro_aqui
+   APP_URL=http://localhost:3000
+   ```
+4. Inicia el servidor en modo desarrollo: `npm run dev`
+5. Deberías ver en la terminal que el servidor corre en el puerto 3000 y que la base de datos se sincronizó.
 
-### 3. Arrancar el Frontend (Interfaz Web)
+### 3. Configuración del Frontend (Interfaz Web)
 1. Abre **una nueva terminal** (manteniendo el backend activo) y navega a la carpeta del frontend: `cd frontend`
 2. Instala las dependencias (solo la primera vez): `npm install`
-3. Inicia la aplicación React con Vite: `npm run dev`
-4. Abre la URL local que muestra la terminal en tu navegador (habitualmente `http://localhost:5173`).
+3. Crea un archivo `.env` en la raíz de `frontend/` y asegúrate de apuntar a la API:
+   ```env
+   VITE_API_URL=http://localhost:3000/api
+   ```
+4. Inicia la aplicación React con Vite: `npm run dev`
+5. Abre la URL local que muestra la terminal en tu navegador (habitualmente `http://localhost:5173`).
 
 ¡Listo! Ya puedes utilizar la interfaz para crear una cuenta e iniciar sesión en **MyWardrobe**.

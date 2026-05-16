@@ -1,15 +1,121 @@
 @import "tailwindcss";
 
+/* ============================================================
+   MYWARDROBE — DESIGN SYSTEM
+   Toda la jerarquía tipográfica y cromática centralizada aquí.
+   Uso: clases Tailwind estándar (text-warm-dark, font-semibold,
+   text-xl, tracking-wide, leading-relaxed, etc.)
+   ============================================================ */
+
 @theme {
-  --color-warm-beige: #f5f0e6;
-  --color-warm-cream: #fffdf7;
-  --color-warm-brown: #8b7355;
-  --color-warm-dark: #3e3326;
-  --color-warm-accent: #d4a373;
+
+  /* ----------------------------------------------------------
+     PALETA CROMÁTICA
+     ---------------------------------------------------------- */
+
+  /* Fondos */
+  --color-warm-cream:        #fffdf7;   /* Fondo principal */
+  --color-warm-beige:        #f5f0e6;   /* Fondo secundario / cards */
+  --color-warm-beige-dark:   #e8e0d0;   /* Bordes suaves / separadores */
+
+  /* Acento (CTA, iconos, highlights) */
+  --color-warm-accent:       #d4a373;   /* Acento principal */
+  --color-warm-accent-light: #e8c9a0;   /* Acento hover / estado activo */
+  --color-warm-accent-dark:  #b8863a;   /* Acento presionado / énfasis */
+
+  /* Texto */
+  --color-warm-dark:         #3e3326;   /* Texto principal */
+  --color-warm-brown:        #8b7355;   /* Texto secundario / labels */
+  --color-warm-muted:        #b5a898;   /* Placeholders / texto deshabilitado */
+
+  /* Estados semánticos */
+  --color-status-success:    #7aab6d;   /* Éxito (verde tierra) */
+  --color-status-warning:    #e0a84e;   /* Advertencia (ámbar) */
+  --color-status-error:      #c96b5a;   /* Error (terracota) */
+  --color-status-info:       #7a9ab8;   /* Info (azul grisáceo) */
+
+  /* ----------------------------------------------------------
+     TIPOGRAFÍA — Familia de fuentes
+     ---------------------------------------------------------- */
+
+  --font-sans:    'Open Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    ui-monospace, 'Cascadia Code', monospace;
+
+  /* ----------------------------------------------------------
+     TIPOGRAFÍA — Escala de tamaños
+     Uso: text-xs · text-sm · text-base · text-lg · text-xl ...
+     ---------------------------------------------------------- */
+
+  --font-size-xs:   0.75rem;    /*  12px — Etiquetas, badges, microcopy */
+  --font-size-sm:   0.875rem;   /*  14px — Texto de apoyo, captions */
+  --font-size-base: 1rem;       /*  16px — Cuerpo de texto principal */
+  --font-size-lg:   1.125rem;   /*  18px — Cuerpo destacado */
+  --font-size-xl:   1.25rem;    /*  20px — Subtítulos de sección */
+  --font-size-2xl:  1.5rem;     /*  24px — Títulos de card / modal */
+  --font-size-3xl:  1.875rem;   /*  30px — Títulos de página */
+  --font-size-4xl:  2.25rem;    /*  36px — Headings principales */
+  --font-size-5xl:  3rem;       /*  48px — Display / Hero */
+
+  /* ----------------------------------------------------------
+     TIPOGRAFÍA — Pesos
+     Uso: font-light · font-normal · font-medium · font-semibold · font-bold
+     ---------------------------------------------------------- */
+
+  --font-weight-light:    300;  /* Texto decorativo / subtítulos ligeros */
+  --font-weight-normal:   400;  /* Cuerpo de texto base */
+  --font-weight-medium:   500;  /* Énfasis suave, navegación */
+  --font-weight-semibold: 600;  /* Títulos de card, labels de formulario */
+  --font-weight-bold:     700;  /* Headings, CTAs, botones */
+
+  /* ----------------------------------------------------------
+     TIPOGRAFÍA — Interlineado (line-height)
+     Uso: leading-tight · leading-snug · leading-normal · leading-relaxed · leading-loose
+     ---------------------------------------------------------- */
+
+  --line-height-tight:   1.25;   /* Headings grandes, display */
+  --line-height-snug:    1.375;  /* Subtítulos */
+  --line-height-normal:  1.5;    /* Cuerpo de texto estándar */
+  --line-height-relaxed: 1.625;  /* Textos largos, descripciones */
+  --line-height-loose:   2;      /* Textos muy aireados */
+
+  /* ----------------------------------------------------------
+     TIPOGRAFÍA — Espaciado de letras (letter-spacing)
+     Uso: tracking-tight · tracking-normal · tracking-wide · tracking-wider · tracking-widest
+     ---------------------------------------------------------- */
+
+  --letter-spacing-tight:   -0.025em;  /* Headings grandes */
+  --letter-spacing-normal:   0em;      /* Cuerpo de texto */
+  --letter-spacing-wide:     0.025em;  /* Labels, navegación */
+  --letter-spacing-wider:    0.05em;   /* Badges, etiquetas en mayúscula */
+  --letter-spacing-widest:   0.1em;    /* Texto decorativo ALL CAPS */
+
 }
+
+/* ============================================================
+   ESTILOS BASE GLOBALES
+   ============================================================ */
 
 @layer base {
   body {
-    @apply bg-warm-cream text-warm-dark font-sans;
+    @apply bg-warm-cream text-warm-dark font-sans text-base leading-normal;
   }
+
+  h1 { @apply text-4xl font-bold   leading-tight  tracking-tight  text-warm-dark;   }
+  h2 { @apply text-3xl font-bold   leading-tight  tracking-tight  text-warm-dark;   }
+  h3 { @apply text-2xl font-semibold leading-snug  tracking-normal text-warm-dark;   }
+  h4 { @apply text-xl  font-semibold leading-snug  tracking-normal text-warm-brown;  }
+  h5 { @apply text-lg  font-medium  leading-normal tracking-wide   text-warm-brown;  }
+  h6 { @apply text-base font-medium leading-normal tracking-wide   text-warm-muted;  }
+
+  p  { @apply text-base font-normal leading-relaxed text-warm-dark; }
+
+  small  { @apply text-sm  font-normal text-warm-muted; }
+  strong { @apply font-semibold text-warm-dark; }
+  em     { @apply italic text-warm-brown; }
+
+  label  { @apply text-sm font-semibold tracking-wide text-warm-brown; }
+  input,
+  textarea,
+  select { @apply font-sans text-base text-warm-dark; }
 }
+

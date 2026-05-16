@@ -1,0 +1,13 @@
+{
+  // Tailwind v4 usa directivas propias (@apply, @layer, @theme)
+  // que el linter CSS nativo de VS Code no reconoce.
+  // Esta configuración silencia esos falsos positivos.
+  "css.lint.unknownAtRules": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+
+  // Activar validación de Tailwind vía la extensión oficial
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "tailwindCSS.experimental.classRegex": []
+}

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import api from '../services/api';
-import { Usuario } from '../models/interfaces';
+import type { Usuario } from '../models/interfaces';
 
 export const useAuth = () => {
   const [user, setUser] = useState<Usuario | null>(() => {
@@ -49,6 +49,62 @@ export const useAuth = () => {
     setUser(null);
   };
 
+  const updateProfile = async (username: string, email: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await api.put('/auth/profile', { username, email });
+      const updatedUser = response.data;
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setUser(updatedUser);
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al actualizar el perfil');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.put('/auth/password', { currentPassword, newPassword });
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al actualizar la contraseña');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserStats = async (): Promise<{ totalItems: number; totalOutfits: number; mostUsedItemName?: string } | null> => {
+    try {
+      const response = await api.get('/auth/stats');
+      return response.data;
+    } catch (err) {
+      console.error('Error fetching user stats:', err);
+      return null;
+    }
+  };
+
+  const deleteAccount = async (): Promise<boolean> => {
+    setLoading(true);
+    setError(null);
+    try {
+      await api.delete('/auth/account');
+      logout(); // Limpia localStorage y estado
+      return true;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Error al eliminar la cuenta');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     user,
     loading,
@@ -56,6 +112,10 @@ export const useAuth = () => {
     login,
     register,
     logout,
+    updateProfile,
+    updatePassword,
+    fetchUserStats,
+    deleteAccount,
     isAuthenticated: !!user,
   };
 };
