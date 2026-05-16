@@ -1,4 +1,4 @@
-import multer from 'multer';
+import multer, { type FileFilterCallback } from 'multer';
 import path from 'path';
 import fs from 'fs';
 
@@ -22,7 +22,7 @@ const storage = multer.diskStorage({
 });
 
 // Filtro de archivos (solo imágenes)
-const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (_req: any, file: Express.Multer.File, cb: FileFilterCallback) => {
   const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
