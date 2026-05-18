@@ -33,6 +33,17 @@ api.interceptors.response.use(
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+
+    if (!error.response) {
+      window.dispatchEvent(new CustomEvent('app-notification', {
+        detail: { type: 'error', message: 'No hay conexión con el servidor' }
+      }));
+    } else if (error.response.status >= 500) {
+      window.dispatchEvent(new CustomEvent('app-notification', {
+        detail: { type: 'error', message: 'Error interno del servidor. Inténtalo más tarde.' }
+      }));
+    }
+
     return Promise.reject(error);
   }
 );

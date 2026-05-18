@@ -9,12 +9,13 @@ import { AlertBanner } from '../components/molecules/AlertBanner';
 import { Avatar } from '../components/atoms/Avatar';
 import { Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ConfirmationModal } from '../components/molecules';
 
 export const OutfitFormView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
-  
+
   const { items, fetchItems, loading: loadingItems } = useItems();
   const { fetchOutfitById, createOutfit, updateOutfit, deleteOutfit, loading: loadingOutfit, error: apiError } = useOutfits();
 
@@ -23,6 +24,7 @@ export const OutfitFormView: React.FC = () => {
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const [categoryFilter, setCategoryFilter] = useState('Todas');
   const [localError, setLocalError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     fetchItems(); // Cargar todas las prendas del armario
@@ -31,7 +33,7 @@ export const OutfitFormView: React.FC = () => {
         if (outfit) {
           setName(outfit.name);
           setDescription(outfit.description || '');
-          setSelectedItemIds(outfit.itemIds);
+          setSelectedItemIds(outfit.itemIds || []);
         } else {
           navigate('/outfits');
         }
@@ -50,7 +52,7 @@ export const OutfitFormView: React.FC = () => {
   }, [items, categoryFilter]);
 
   const toggleItemSelection = (itemId: number) => {
-    setSelectedItemIds(prev => 
+    setSelectedItemIds(prev =>
       prev.includes(itemId) ? prev.filter(id => id !== itemId) : [...prev, itemId]
     );
   };
@@ -74,7 +76,6 @@ export const OutfitFormView: React.FC = () => {
       description: description || undefined,
       itemIds: selectedItemIds
     };
-
     let success;
     if (isEditing && id) {
       success = await updateOutfit(Number(id), payload);
@@ -87,12 +88,11 @@ export const OutfitFormView: React.FC = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (window.confirm('¿Seguro que quieres eliminar este outfit? Esta acción no se puede deshacer.')) {
-      const success = await deleteOutfit(Number(id));
-      if (success) {
-        navigate('/outfits');
-      }
+  const handleDeleteConfirm = async () => {
+    setShowDeleteModal(false);
+    const success = await deleteOutfit(Number(id));
+    if (success) {
+      navigate('/outfits');
     }
   };
 
@@ -115,36 +115,38 @@ export const OutfitFormView: React.FC = () => {
 
         {error && <AlertBanner variant="error" message={error} />}
 
-        <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-8">
-          
+        <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row gap-8 lg:h-[640px] items-stretch">
+
           {/* Columna Izquierda: Datos del Outfit */}
-          <div className="lg:w-1/3 space-y-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-warm-beige space-y-6 sticky top-24">
-              <h2 className="text-xl font-semibold text-warm-dark">Detalles</h2>
-              
-              <FormField
-                id="name"
-                label="Nombre del Outfit *"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ej. Casual de Viernes"
-                required
-              />
-              
-              <div className="flex flex-col gap-1 w-full">
-                <label htmlFor="description" className="text-sm font-semibold tracking-wide text-warm-brown">
-                  Descripción
-                </label>
-                <textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Ej. Outfit cómodo para ir a la oficina y luego salir a cenar."
-                  className="w-full px-4 py-3 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark min-h-[120px] resize-none transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white"
+          <div className="lg:w-1/3 h-full">
+            <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-warm-beige flex flex-col justify-between h-full">
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-warm-dark">Detalles</h2>
+
+                <FormField
+                  id="name"
+                  label="Nombre del Outfit"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Casual de Viernes"
+                  required
                 />
+
+                <div className="flex flex-col gap-1.5 w-full">
+                  <label htmlFor="description" className="text-sm font-semibold tracking-wide text-warm-brown">
+                    Descripción
+                  </label>
+                  <textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Outfit cómodo para ir a la oficina y luego salir a cenar."
+                    className="w-full px-4 py-3 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark h-[140px] resize-none transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white"
+                  />
+                </div>
               </div>
 
-              <div className="pt-4 border-t border-warm-beige space-y-3">
+              <div className="pt-4 border-t border-warm-beige space-y-3 mt-6 shrink-0">
                 <p className="text-sm text-warm-brown font-medium">
                   {selectedItemIds.length} prendas seleccionadas
                 </p>
@@ -155,7 +157,7 @@ export const OutfitFormView: React.FC = () => {
                   Cancelar
                 </Button>
                 {isEditing && (
-                  <Button type="button" variant="danger" className="w-full mt-4" onClick={handleDelete} loading={isLoading}>
+                  <Button type="button" variant="danger" className="w-full mt-4" onClick={() => setShowDeleteModal(true)} loading={isLoading}>
                     Eliminar Outfit
                   </Button>
                 )}
@@ -164,85 +166,101 @@ export const OutfitFormView: React.FC = () => {
           </div>
 
           {/* Columna Derecha: Selección de prendas */}
-          <div className="lg:w-2/3 flex flex-col gap-6">
-            <div className="flex items-center gap-4 flex-wrap">
-              <span className="text-warm-dark font-semibold">Filtrar prendas:</span>
-              <div className="flex flex-wrap gap-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setCategoryFilter(cat)}
-                    className={[
-                      'px-3 py-1.5 rounded-full text-sm font-medium transition-colors duration-150',
-                      categoryFilter === cat
-                        ? 'bg-warm-dark text-white'
-                        : 'bg-warm-beige text-warm-brown hover:bg-warm-beige-dark',
-                    ].join(' ')}
-                  >
-                    {cat}
-                  </button>
-                ))}
+          <div className="lg:w-2/3 flex flex-col h-full">
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-warm-beige flex-1 flex flex-col min-h-0 space-y-6">
+
+              {/* Filtros de Categoría (Ahora DENTRO de la tarjeta para una alineación simétrica perfecta) */}
+              <div className="flex items-center gap-4 flex-wrap shrink-0 pb-4 border-b border-warm-beige">
+                <span className="text-warm-dark font-semibold text-sm">Filtrar prendas:</span>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setCategoryFilter(cat)}
+                      className={[
+                        'px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border cursor-pointer select-none',
+                        categoryFilter === cat
+                          ? 'bg-warm-dark border-warm-dark text-white shadow-sm'
+                          : 'bg-warm-cream border-warm-beige text-warm-brown hover:bg-warm-beige/50',
+                      ].join(' ')}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-warm-beige min-h-[500px]">
-              <AnimatePresence mode="popLayout">
-                {filteredItems.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center py-20 text-warm-brown">
-                    No hay prendas en esta categoría.
-                  </div>
-                ) : (
-                  <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {filteredItems.map(item => {
-                      const isSelected = selectedItemIds.includes(item.id);
-                      return (
-                        <motion.li
-                          layout
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          key={item.id}
-                        >
-                          <button
-                            type="button"
-                            onClick={() => toggleItemSelection(item.id)}
-                            className={[
-                              'relative w-full aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2',
-                              isSelected ? 'border-warm-accent shadow-md' : 'border-warm-beige bg-warm-beige/20 hover:border-warm-accent/50 hover:shadow-sm'
-                            ].join(' ')}
+              {/* Grid de prendas scrollable */}
+              <div className="flex-1 overflow-y-auto pr-1">
+                <AnimatePresence mode="popLayout">
+                  {filteredItems.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center py-20 text-warm-brown">
+                      No hay prendas en esta categoría.
+                    </div>
+                  ) : (
+                    <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                      {filteredItems.map(item => {
+                        const isSelected = selectedItemIds.includes(item.id);
+                        return (
+                          <motion.li
+                            layout
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            key={item.id}
                           >
-                            {/* Checkmark overlay for selected items */}
-                            {isSelected && (
-                              <div className="absolute top-2 right-2 bg-warm-accent text-white rounded-full p-1 z-10 shadow-sm">
-                                <Check size={14} strokeWidth={3} />
-                              </div>
-                            )}
-                            
-                            {item.imageUrl ? (
-                              <img src={item.imageUrl} alt={item.name} className={`w-full h-full object-cover transition-transform duration-300 ${isSelected ? 'scale-105' : 'group-hover:scale-105'}`} />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <Avatar alt={item.name} size="lg" />
-                              </div>
-                            )}
+                            <button
+                              type="button"
+                              onClick={() => toggleItemSelection(item.id)}
+                              className={[
+                                'relative w-full aspect-square rounded-xl overflow-hidden border-2 transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-warm-accent focus:ring-offset-2',
+                                isSelected ? 'border-warm-accent shadow-md' : 'border-warm-beige bg-warm-beige/20 hover:border-warm-accent/50 hover:shadow-sm'
+                              ].join(' ')}
+                            >
+                              {/* Checkmark overlay for selected items */}
+                              {isSelected && (
+                                <div className="absolute top-2 right-2 bg-warm-accent text-white rounded-full p-1 z-10 shadow-sm">
+                                  <Check size={14} strokeWidth={3} />
+                                </div>
+                              )}
 
-                            {/* Label en la parte inferior de la prenda */}
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 pt-6">
-                              <p className="text-white text-xs font-medium truncate">{item.name}</p>
-                            </div>
-                          </button>
-                        </motion.li>
-                      );
-                    })}
-                  </ul>
-                )}
-              </AnimatePresence>
+                              {item.imageUrl ? (
+                                <img src={item.imageUrl} alt={item.name} className={`w-full h-full object-cover transition-transform duration-300 ${isSelected ? 'scale-105' : 'group-hover:scale-105'}`} />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Avatar alt={item.name} size="lg" />
+                                </div>
+                              )}
+
+                              {/* Label en la parte inferior de la prenda */}
+                              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 pt-6">
+                                <p className="text-white text-xs font-medium truncate">{item.name}</p>
+                              </div>
+                            </button>
+                          </motion.li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
         </form>
       </main>
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title="¿Eliminar outfit?"
+        message="¿Seguro que quieres eliminar este outfit? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 };

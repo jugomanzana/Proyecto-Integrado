@@ -7,12 +7,14 @@ import { Button } from '../components/atoms/Button';
 import { Avatar } from '../components/atoms/Avatar';
 import { ArrowLeft, Edit2, Trash2 } from 'lucide-react';
 import type { Prenda } from '../models/interfaces';
+import { ConfirmationModal } from '../components/molecules';
 
 export const ItemDetailView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { fetchItemById, deleteItem, loading } = useItems();
   const [item, setItem] = useState<Prenda | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -26,14 +28,14 @@ export const ItemDetailView: React.FC = () => {
     }
   }, [id, fetchItemById, navigate]);
 
-  const handleDelete = async () => {
-    if (window.confirm('¿Seguro que quieres eliminar esta prenda?')) {
-      const success = await deleteItem(Number(id));
-      if (success) {
-        navigate('/dashboard');
-      }
+  const handleDeleteConfirm = async () => {
+    setShowDeleteModal(false);
+    const success = await deleteItem(Number(id));
+    if (success) {
+      navigate('/dashboard');
     }
   };
+
 
   if (loading || !item) {
     return (
@@ -48,7 +50,7 @@ export const ItemDetailView: React.FC = () => {
 
   const statusVariant = 
     item.status === 'Disponible' ? 'success' :
-    item.status === 'Lavandería' ? 'warning' : 'info';
+    item.status === 'Colada' ? 'warning' : 'info';
 
   return (
     <div className="min-h-screen bg-warm-cream flex flex-col">
@@ -102,7 +104,7 @@ export const ItemDetailView: React.FC = () => {
                 <Edit2 size={16} />
                 Editar
               </Button>
-              <Button variant="danger" className="flex-1" onClick={handleDelete}>
+              <Button variant="danger" className="flex-1" onClick={() => setShowDeleteModal(true)}>
                 <Trash2 size={16} />
                 Eliminar
               </Button>
@@ -110,6 +112,17 @@ export const ItemDetailView: React.FC = () => {
           </div>
         </div>
       </main>
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        title="¿Eliminar prenda?"
+        message="¿Seguro que quieres eliminar esta prenda de tu armario? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        variant="danger"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setShowDeleteModal(false)}
+      />
     </div>
   );
 };

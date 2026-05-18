@@ -9,3 +9,4 @@ export { NavBrand    } from './NavBrand';
 export { ActionCard  } from './ActionCard';
 export { UserInfo    } from './UserInfo';
 export { SearchBar   } from './SearchBar';
+export { ConfirmationModal } from './ConfirmationModal';

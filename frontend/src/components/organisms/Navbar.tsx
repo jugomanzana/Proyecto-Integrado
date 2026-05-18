@@ -39,7 +39,12 @@ export const Navbar: React.FC = () => {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
 
         {/* Marca */}
-        <NavBrand size="sm" />
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="hover:opacity-80 active:scale-98 transition-all duration-150 cursor-pointer text-left focus:outline-none focus:ring-2 focus:ring-warm-accent rounded-xl"
+        >
+          <NavBrand size="sm" />
+        </button>
 
         {/* Navegación desktop */}
         <nav className="hidden md:flex items-center gap-1" aria-label="Navegación principal">
@@ -60,7 +65,7 @@ export const Navbar: React.FC = () => {
             <button onClick={() => navigate('/profile')} className="text-left hover:bg-warm-beige/50 p-1 rounded-xl transition-colors">
               <UserInfo
                 username={user.username}
-                role={user.role}
+                avatarSrc={user.avatarUrl}
                 layout="horizontal"
               />
             </button>
@@ -103,7 +108,7 @@ export const Navbar: React.FC = () => {
                 <button onClick={() => { navigate('/profile'); setMenuOpen(false); }} className="text-left mb-3 pb-3 border-b border-warm-beige w-full hover:bg-warm-beige/50 p-2 rounded-xl transition-colors">
                   <UserInfo
                     username={user.username}
-                    role={user.role}
+                    avatarSrc={user.avatarUrl}
                     layout="horizontal"
                   />
                 </button>

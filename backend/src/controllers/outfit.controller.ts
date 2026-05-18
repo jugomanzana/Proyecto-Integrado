@@ -9,14 +9,50 @@ import { Item }   from '../models/Item.js';
 // que componen el outfit (JSON array).
 // ============================================================
 
-/** GET /api/outfits — Listar outfits del usuario */
+// Prioridad de categorías para el collage: de más a menos representativa del outfit
+const COLLAGE_CATEGORY_PRIORITY: string[] = [
+  'Camiseta', 'Sudadera', 'Pantalón', 'Zapatos', 'Accesorios', 'Otro',
+];
+
+/** GET /api/outfits — Listar outfits del usuario (con preview de imágenes para collage) */
 export const getOutfits = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const outfits = await Outfit.findAll({
       where: { userId: req.user!.id },
       order: [['createdAt', 'DESC']],
     });
-    res.status(200).json(outfits);
+
+    // Para cada outfit, obtenemos las prendas y las ordenamos por categoría antes del collage
+    const outfitsWithPreviews = await Promise.all(
+      outfits.map(async (outfit) => {
+        const allIds = outfit.itemIds ?? [];
+        const allItems = allIds.length > 0
+          ? await Item.findAll({
+              where: { id: allIds, userId: req.user!.id },
+              attributes: ['id', 'imageUrl', 'category'],
+            })
+          : [];
+
+        // Ordenar por prioridad de categoría
+        const sorted = [...allItems].sort((a, b) => {
+          const pa = COLLAGE_CATEGORY_PRIORITY.indexOf(a.category);
+          const pb = COLLAGE_CATEGORY_PRIORITY.indexOf(b.category);
+          const rankA = pa === -1 ? COLLAGE_CATEGORY_PRIORITY.length : pa;
+          const rankB = pb === -1 ? COLLAGE_CATEGORY_PRIORITY.length : pb;
+          return rankA - rankB;
+        });
+
+        // Tomar las 4 mejores y extraer solo sus URLs
+        const previewImageUrls = sorted
+          .slice(0, 4)
+          .map((i) => i.imageUrl)
+          .filter(Boolean) as string[];
+
+        return { ...outfit.toJSON(), previewImageUrls };
+      })
+    );
+
+    res.status(200).json(outfitsWithPreviews);
   } catch (error) {
     console.error('[outfits] getOutfits error:', error);
     res.status(500).json({ message: 'Error al obtener los outfits' });

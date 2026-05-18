@@ -6,6 +6,8 @@ import { sequelize }  from './models/index.js';
 import authRoutes     from './routes/auth.routes.js';
 import itemRoutes     from './routes/item.routes.js';
 import outfitRoutes   from './routes/outfit.routes.js';
+import { seedDatabase } from './utils/seeder.js';
+
 
 dotenv.config();
 
@@ -39,9 +41,10 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // ── Arranque ────────────────────────────────────────────────
-sequelize.sync({ alter: true })
-  .then(() => {
+sequelize.sync()
+  .then(async () => {
     console.log('[database]: Database synced successfully.');
+    await seedDatabase();
     app.listen(port, () => {
       console.log(`[server]: Server running at http://localhost:${port}`);
     });

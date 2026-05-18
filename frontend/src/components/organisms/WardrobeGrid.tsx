@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown } from 'lucide-react';
 import type { Prenda } from '../../models/interfaces';
 import { Button }      from '../atoms/Button';
 import { Badge }       from '../atoms/Badge';
@@ -40,6 +40,11 @@ export const WardrobeGrid: React.FC<WardrobeGridProps> = ({
   const [category, setCategory] = useState(ALL_LABEL);
   const [season, setSeason] = useState(ALL_LABEL);
   const [color, setColor] = useState('Todos');
+
+  // Estados para abrir/cerrar los desplegables de filtrado
+  const [isCatOpen, setIsCatOpen] = useState(false);
+  const [isSeasonOpen, setIsSeasonOpen] = useState(false);
+  const [isColorOpen, setIsColorOpen] = useState(false);
 
   // Informar al padre de cambios de filtro con debounce (para búsqueda backend)
   React.useEffect(() => {
@@ -111,23 +116,166 @@ export const WardrobeGrid: React.FC<WardrobeGridProps> = ({
         aria-label="Filtros avanzados"
         className="flex flex-wrap gap-4 items-center bg-white p-4 rounded-2xl shadow-sm border border-warm-beige"
       >
-        <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <label htmlFor="catFilter" className="text-xs font-semibold text-warm-brown uppercase tracking-wider">Categoría</label>
-          <select id="catFilter" value={category} onChange={(e) => setCategory(e.target.value)} className="px-3 py-2 rounded-xl border border-warm-beige text-sm focus:ring-2 focus:ring-warm-accent outline-none">
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+        {/* Filtro de Categoría (Desplegable Premium) */}
+        <div className="flex flex-col gap-1.5 w-full sm:w-48 relative">
+          <label className="text-xs font-semibold text-warm-brown uppercase tracking-wider">Categoría</label>
+          <button
+            type="button"
+            onClick={() => {
+              setIsCatOpen(!isCatOpen);
+              setIsSeasonOpen(false);
+              setIsColorOpen(false);
+            }}
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white text-left cursor-pointer"
+          >
+            <span className="font-medium truncate">{category}</span>
+            <ChevronDown size={16} className={['text-warm-brown transition-transform shrink-0', isCatOpen ? 'rotate-180' : ''].join(' ')} />
+          </button>
+
+          <AnimatePresence>
+            {isCatOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setIsCatOpen(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-warm-beige rounded-2xl shadow-lg p-3.5 z-20 flex flex-wrap gap-1.5 max-h-60 overflow-y-auto"
+                >
+                  {categories.map((c) => {
+                    const isSelected = category === c;
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => {
+                          setCategory(c);
+                          setIsCatOpen(false);
+                        }}
+                        className={[
+                          'px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer select-none',
+                          isSelected
+                            ? 'bg-warm-dark border-warm-dark text-white shadow-sm'
+                            : 'bg-warm-cream/40 border-warm-beige text-warm-brown hover:bg-warm-beige/50',
+                        ].join(' ')}
+                      >
+                        {c}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
-        <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <label htmlFor="seasonFilter" className="text-xs font-semibold text-warm-brown uppercase tracking-wider">Temporada</label>
-          <select id="seasonFilter" value={season} onChange={(e) => setSeason(e.target.value)} className="px-3 py-2 rounded-xl border border-warm-beige text-sm focus:ring-2 focus:ring-warm-accent outline-none">
-            {seasons.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+
+        {/* Filtro de Temporada (Desplegable Premium) */}
+        <div className="flex flex-col gap-1.5 w-full sm:w-48 relative">
+          <label className="text-xs font-semibold text-warm-brown uppercase tracking-wider">Temporada</label>
+          <button
+            type="button"
+            onClick={() => {
+              setIsSeasonOpen(!isSeasonOpen);
+              setIsCatOpen(false);
+              setIsColorOpen(false);
+            }}
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white text-left cursor-pointer"
+          >
+            <span className="font-medium truncate">{season}</span>
+            <ChevronDown size={16} className={['text-warm-brown transition-transform shrink-0', isSeasonOpen ? 'rotate-180' : ''].join(' ')} />
+          </button>
+
+          <AnimatePresence>
+            {isSeasonOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setIsSeasonOpen(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-warm-beige rounded-2xl shadow-lg p-3.5 z-20 flex flex-wrap gap-1.5 max-h-60 overflow-y-auto"
+                >
+                  {seasons.map((s) => {
+                    const isSelected = season === s;
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          setSeason(s);
+                          setIsSeasonOpen(false);
+                        }}
+                        className={[
+                          'px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer select-none',
+                          isSelected
+                            ? 'bg-warm-dark border-warm-dark text-white shadow-sm'
+                            : 'bg-warm-cream/40 border-warm-beige text-warm-brown hover:bg-warm-beige/50',
+                        ].join(' ')}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
-        <div className="flex flex-col gap-1 w-full sm:w-auto">
-          <label htmlFor="colorFilter" className="text-xs font-semibold text-warm-brown uppercase tracking-wider">Color</label>
-          <select id="colorFilter" value={color} onChange={(e) => setColor(e.target.value)} className="px-3 py-2 rounded-xl border border-warm-beige text-sm focus:ring-2 focus:ring-warm-accent outline-none">
-            {colors.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+
+        {/* Filtro de Color (Desplegable Premium) */}
+        <div className="flex flex-col gap-1.5 w-full sm:w-48 relative">
+          <label className="text-xs font-semibold text-warm-brown uppercase tracking-wider">Color</label>
+          <button
+            type="button"
+            onClick={() => {
+              setIsColorOpen(!isColorOpen);
+              setIsCatOpen(false);
+              setIsSeasonOpen(false);
+            }}
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white text-left cursor-pointer"
+          >
+            <span className="font-medium truncate">{color}</span>
+            <ChevronDown size={16} className={['text-warm-brown transition-transform shrink-0', isColorOpen ? 'rotate-180' : ''].join(' ')} />
+          </button>
+
+          <AnimatePresence>
+            {isColorOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setIsColorOpen(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  transition={{ duration: 0.15, ease: 'easeOut' }}
+                  className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-warm-beige rounded-2xl shadow-lg p-3.5 z-20 flex flex-wrap gap-1.5 max-h-60 overflow-y-auto"
+                >
+                  {colors.map((c) => {
+                    const isSelected = color === c;
+                    return (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => {
+                          setColor(c);
+                          setIsColorOpen(false);
+                        }}
+                        className={[
+                          'px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer select-none',
+                          isSelected
+                            ? 'bg-warm-dark border-warm-dark text-white shadow-sm'
+                            : 'bg-warm-cream/40 border-warm-beige text-warm-brown hover:bg-warm-beige/50',
+                        ].join(' ')}
+                      >
+                        {c}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

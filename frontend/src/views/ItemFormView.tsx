@@ -6,6 +6,15 @@ import { FormField } from '../components/molecules/FormField';
 import { Button } from '../components/atoms/Button';
 import { AlertBanner } from '../components/molecules/AlertBanner';
 import type { ItemSeason, ItemStatus } from '../models/interfaces';
+import { ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// ============================================================
+// VISTA: ItemFormView
+// Formulario premium para añadir o editar una prenda de vestir.
+// Cuenta con selectores premium desplegables dinámicamente para
+// Categoría, Temporada y Estado con animaciones fluidas y pastillas de selección.
+// ============================================================
 
 export const ItemFormView: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -13,8 +22,17 @@ export const ItemFormView: React.FC = () => {
   const navigate = useNavigate();
   const { fetchItemById, createItem, updateItem, loading, error: apiError } = useItems();
 
+  const categoriesList = ['Camiseta', 'Sudadera', 'Pantalón', 'Zapatos', 'Accesorios', 'Otro'];
+  const seasonsList: ItemSeason[] = ['Primavera', 'Verano', 'Otoño', 'Invierno', 'Todo el año'];
+  const statusesList: { value: ItemStatus; label: string; activeClass: string }[] = [
+    { value: 'Disponible', label: 'Disponible', activeClass: 'bg-status-success border-status-success text-white shadow-sm' },
+    { value: 'Colada',     label: 'Colada',     activeClass: 'bg-status-warning border-status-warning text-white shadow-sm' },
+    { value: 'Prestado',   label: 'Prestado',   activeClass: 'bg-status-info border-status-info text-white shadow-sm' },
+  ];
+
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
   const [color, setColor] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -24,18 +42,30 @@ export const ItemFormView: React.FC = () => {
   const [status, setStatus] = useState<ItemStatus>('Disponible');
   const [localError, setLocalError] = useState<string | null>(null);
 
+  // Estados para abrir/cerrar desplegables interactivos
+  const [isCategoryOpen, setIsCategoryOpen] = useState(false);
+  const [isSeasonOpen, setIsSeasonOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+
   useEffect(() => {
     if (isEditing && id) {
       fetchItemById(Number(id)).then(item => {
         if (item) {
           setName(item.name);
-          setCategory(item.category);
           setColor(item.color || '');
           if (item.imageUrl) setImagePreview(item.imageUrl);
           setSeason(item.season || '');
           setSize(item.size || '');
           setFabric(item.fabric || '');
           setStatus(item.status);
+
+          // Cargar categoría de forma inteligente
+          if (categoriesList.includes(item.category)) {
+            setSelectedCategory(item.category);
+          } else {
+            setSelectedCategory('Otro');
+            setCustomCategory(item.category);
+          }
         } else {
           navigate('/dashboard');
         }
@@ -47,7 +77,9 @@ export const ItemFormView: React.FC = () => {
     e.preventDefault();
     setLocalError(null);
 
-    if (!name || !category || !color || !season || !size) {
+    const finalCategory = selectedCategory === 'Otro' ? customCategory.trim() : selectedCategory;
+
+    if (!name || !finalCategory || !color || !season || !size) {
       setLocalError('El nombre, categoría, color, temporada y talla son obligatorios.');
       return;
     }
@@ -59,7 +91,7 @@ export const ItemFormView: React.FC = () => {
 
     const payload = {
       name,
-      category,
+      category: finalCategory,
       color,
       season: season as ItemSeason,
       size,
@@ -102,34 +134,102 @@ export const ItemFormView: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <FormField
               id="name"
-              label="Nombre *"
+              label="Nombre"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ej. Camiseta básica blanca"
+              placeholder="Camiseta básica blanca"
               required
             />
-            <FormField
-              id="category"
-              label="Categoría *"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="Ej. Camisetas"
-              required
-            />
+
+            {/* Categoría (Desplegable Premium Animado) */}
+            <div className="flex flex-col gap-1.5 w-full relative">
+              <label className="text-sm font-semibold tracking-wide text-warm-brown">Categoría</label>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCategoryOpen(!isCategoryOpen);
+                  setIsSeasonOpen(false);
+                  setIsStatusOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white text-left cursor-pointer"
+              >
+                <span className={selectedCategory ? 'text-warm-dark font-medium' : 'text-warm-muted'}>
+                  {selectedCategory || 'Selecciona una categoría'}
+                </span>
+                <ChevronDown size={18} className={['text-warm-brown transition-transform duration-200', isCategoryOpen ? 'rotate-180' : ''].join(' ')} />
+              </button>
+
+              <AnimatePresence>
+                {isCategoryOpen && (
+                  <>
+                    {/* Backdrop transparente para cerrar al hacer clic fuera */}
+                    <div className="fixed inset-0 z-10" onClick={() => setIsCategoryOpen(false)} />
+                    
+                    {/* Panel flotante de pastillas */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-warm-beige rounded-2xl shadow-lg p-4 z-20 flex flex-wrap gap-2"
+                    >
+                      {categoriesList.map((cat) => {
+                        const isSelected = selectedCategory === cat;
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => {
+                              setSelectedCategory(cat);
+                              setIsCategoryOpen(false);
+                              if (cat !== 'Otro') {
+                                setCustomCategory('');
+                              }
+                            }}
+                            className={[
+                              'px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 border cursor-pointer select-none',
+                              isSelected
+                                ? 'bg-warm-dark border-warm-dark text-white shadow-sm'
+                                : 'bg-warm-cream/40 border-warm-beige text-warm-brown hover:bg-warm-beige/50',
+                            ].join(' ')}
+                          >
+                            {cat}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {selectedCategory === 'Otro' && (
+              <div className="col-span-1 sm:col-span-2">
+                <FormField
+                  id="customCategory"
+                  label="Especificar Categoría"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  placeholder="Especifica la categoría (como Abrigo, Vestido, etc.)"
+                  required
+                />
+              </div>
+            )}
+
             <FormField
               id="color"
-              label="Color *"
+              label="Color"
               value={color}
               onChange={(e) => setColor(e.target.value)}
-              placeholder="Ej. Blanco"
+              placeholder="Blanco"
               required
             />
             <FormField
               id="size"
-              label="Talla *"
+              label="Talla"
               value={size}
               onChange={(e) => setSize(e.target.value)}
-              placeholder="Ej. M, 42, Única"
+              placeholder="M, 42, Única"
               required
             />
             <FormField
@@ -137,57 +237,158 @@ export const ItemFormView: React.FC = () => {
               label="Tejido"
               value={fabric}
               onChange={(e) => setFabric(e.target.value)}
-              placeholder="Ej. Algodón"
+              placeholder="Algodón"
             />
             
-            <div className="flex flex-col gap-1 w-full">
-              <label htmlFor="season" className="text-sm font-semibold tracking-wide text-warm-brown">Temporada *</label>
-              <select
-                id="season"
-                value={season}
-                onChange={(e) => setSeason(e.target.value as ItemSeason)}
-                className="w-full px-4 py-3 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white"
-                required
+            {/* Temporada (Desplegable Premium Animado) */}
+            <div className="flex flex-col gap-1.5 w-full relative">
+              <label className="text-sm font-semibold tracking-wide text-warm-brown">Temporada</label>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSeasonOpen(!isSeasonOpen);
+                  setIsCategoryOpen(false);
+                  setIsStatusOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white text-left cursor-pointer"
               >
-                <option value="">Selecciona una temporada</option>
-                <option value="Primavera">Primavera</option>
-                <option value="Verano">Verano</option>
-                <option value="Otoño">Otoño</option>
-                <option value="Invierno">Invierno</option>
-                <option value="Todo el año">Todo el año</option>
-              </select>
+                <span className={season ? 'text-warm-dark font-medium' : 'text-warm-muted'}>
+                  {season || 'Selecciona una temporada'}
+                </span>
+                <ChevronDown size={18} className={['text-warm-brown transition-transform duration-200', isSeasonOpen ? 'rotate-180' : ''].join(' ')} />
+              </button>
+
+              <AnimatePresence>
+                {isSeasonOpen && (
+                  <>
+                    {/* Backdrop transparente para cerrar al hacer clic fuera */}
+                    <div className="fixed inset-0 z-10" onClick={() => setIsSeasonOpen(false)} />
+                    
+                    {/* Panel flotante de pastillas */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-warm-beige rounded-2xl shadow-lg p-4 z-20 flex flex-wrap gap-2"
+                    >
+                      {seasonsList.map((s) => {
+                        const isSelected = season === s;
+                        return (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => {
+                              setSeason(s);
+                              setIsSeasonOpen(false);
+                            }}
+                            className={[
+                              'px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 border cursor-pointer select-none',
+                              isSelected
+                                ? 'bg-warm-dark border-warm-dark text-white shadow-sm'
+                                : 'bg-warm-cream/40 border-warm-beige text-warm-brown hover:bg-warm-beige/50',
+                            ].join(' ')}
+                          >
+                            {s}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
 
-            <div className="flex flex-col gap-1 w-full">
-              <label htmlFor="status" className="text-sm font-semibold tracking-wide text-warm-brown">Estado *</label>
-              <select
-                id="status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as ItemStatus)}
-                className="w-full px-4 py-3 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white"
-                required
+            {/* Estado (Desplegable Premium Animado) */}
+            <div className="flex flex-col gap-1.5 w-full relative">
+              <label className="text-sm font-semibold tracking-wide text-warm-brown">Estado</label>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsStatusOpen(!isStatusOpen);
+                  setIsCategoryOpen(false);
+                  setIsSeasonOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-warm-beige bg-warm-cream/50 text-warm-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-warm-accent focus:bg-white text-left cursor-pointer"
               >
-                <option value="Disponible">Disponible</option>
-                <option value="Lavandería">Lavandería</option>
-                <option value="Prestado">Prestado</option>
-              </select>
+                <span className="text-warm-dark font-medium flex items-center gap-2">
+                  {status ? (
+                    <>
+                      <span className={[
+                        'w-2.5 h-2.5 rounded-full shrink-0', 
+                        status === 'Disponible' ? 'bg-status-success' :
+                        status === 'Colada' ? 'bg-status-warning' : 'bg-status-info'
+                      ].join(' ')} />
+                      {status}
+                    </>
+                  ) : (
+                    'Selecciona un estado'
+                  )}
+                </span>
+                <ChevronDown size={18} className={['text-warm-brown transition-transform duration-200', isStatusOpen ? 'rotate-180' : ''].join(' ')} />
+              </button>
+
+              <AnimatePresence>
+                {isStatusOpen && (
+                  <>
+                    {/* Backdrop transparente para cerrar al hacer clic fuera */}
+                    <div className="fixed inset-0 z-10" onClick={() => setIsStatusOpen(false)} />
+                    
+                    {/* Panel flotante de pastillas */}
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className="absolute left-0 right-0 top-[calc(100%+4px)] bg-white border border-warm-beige rounded-2xl shadow-lg p-4 z-20 flex flex-wrap gap-2"
+                    >
+                      {statusesList.map((st) => {
+                        const isSelected = status === st.value;
+                        return (
+                          <button
+                            key={st.value}
+                            type="button"
+                            onClick={() => {
+                              setStatus(st.value);
+                              setIsStatusOpen(false);
+                            }}
+                            className={[
+                              'px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 border cursor-pointer select-none',
+                              isSelected
+                                ? st.activeClass
+                                : 'bg-warm-cream/40 border-warm-beige text-warm-brown hover:bg-warm-beige/50',
+                            ].join(' ')}
+                          >
+                            {st.label}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          {/* Imagen de la prenda */}
+          <div className="flex flex-col gap-3 pt-2">
             <label className="text-sm font-semibold tracking-wide text-warm-brown">
               Imagen de la prenda
             </label>
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 rounded-2xl bg-warm-beige/30 border border-warm-beige border-dashed flex items-center justify-center overflow-hidden shrink-0">
+              <label 
+                htmlFor="image-upload"
+                className="w-24 h-24 rounded-2xl bg-warm-beige/30 border border-warm-beige border-dashed flex items-center justify-center overflow-hidden shrink-0 cursor-pointer hover:bg-warm-beige/50 hover:border-warm-accent transition-all duration-200"
+              >
                 {imagePreview ? (
                   <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-2xl opacity-50">📷</span>
+                  <span className="text-2xl opacity-50 select-none hover:scale-110 transition-transform">📷</span>
                 )}
-              </div>
+              </label>
               <div className="flex-1">
                 <input
+                  id="image-upload"
                   type="file"
                   accept="image/jpeg, image/png, image/webp, image/gif"
                   onChange={(e) => {

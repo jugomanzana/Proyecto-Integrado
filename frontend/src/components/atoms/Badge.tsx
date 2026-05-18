@@ -3,7 +3,7 @@ import React from 'react';
 // ============================================================
 // ÁTOMO: Badge
 // Etiqueta visual compacta. Usada para estados de prendas
-// (disponible, lavandería, prestado) y categorías.
+// (disponible, colada, prestado) y categorías.
 // ============================================================
 
 type BadgeVariant = 'default' | 'accent' | 'success' | 'warning' | 'error' | 'info';

@@ -66,4 +66,14 @@ Para arrancar y probar la aplicación en tu entorno local, sigue estas instrucci
 4. Inicia la aplicación React con Vite: `npm run dev`
 5. Abre la URL local que muestra la terminal en tu navegador (habitualmente `http://localhost:5173`).
 
-¡Listo! Ya puedes utilizar la interfaz para crear una cuenta e iniciar sesión en **MyWardrobe**.
+¡Listo! Ya puedes utilizar la interfaz para interactuar con **MyWardrobe**.
+
+---
+
+### 🔑 Usuarios de Prueba (Autoseed)
+El backend incluye un sistema de **seeding automático**. La primera vez que arranques el servidor backend, si no detecta usuarios registrados, creará de forma automática una cuenta de prueba para agilizar tus testeos sin necesidad de pasar por el registro manual:
+
+* **Email:** `user@example.com`
+* **Contraseña:** `password123`
+
+*(Nota: Por supuesto, también puedes usar el botón "Regístrate" de la aplicación para crear nuevas cuentas personalizadas siempre que quieras).*

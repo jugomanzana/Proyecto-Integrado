@@ -107,14 +107,14 @@ export const LoginForm: React.FC = () => {
 
         <FormField
           id="email"
-          label="Email"
-          type="email"
+          label={isLogin ? "Correo o Nombre de usuario" : "Email"}
+          type={isLogin ? "text" : "email"}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="tu@email.com"
           icon={<Mail size={16} />}
           required
-          autoComplete="email"
+          autoComplete={isLogin ? "username" : "email"}
         />
 
         <FormField

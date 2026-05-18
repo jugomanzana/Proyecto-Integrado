@@ -4,19 +4,19 @@ import { User } from './User.js';
 
 // Tipos en español — fuente única de verdad, sin capa de traducción
 export type ItemSeason = 'Primavera' | 'Verano' | 'Otoño' | 'Invierno' | 'Todo el año';
-export type ItemStatus = 'Disponible' | 'Lavandería' | 'Prestado';
+export type ItemStatus = 'Disponible' | 'Colada' | 'Prestado';
 
 export class Item extends Model {
-  public id!: number;
-  public userId!: number;
-  public name!: string;
-  public category!: string;       // 'Camisetas', 'Abrigos', 'Pantalones'…
-  public color!: string;
-  public imageUrl!: string;
-  public season!: ItemSeason;
-  public size!: string;
-  public fabric!: string | null;  // Algodón, Lana, Poliéster…
-  public status!: ItemStatus;
+  declare id: number;
+  declare userId: number;
+  declare name: string;
+  declare category: string;       // 'Camisetas', 'Abrigos', 'Pantalones'…
+  declare color: string;
+  declare imageUrl: string;
+  declare season: ItemSeason;
+  declare size: string;
+  declare fabric: string | null;  // Algodón, Lana, Poliéster…
+  declare status: ItemStatus;
 }
 
 Item.init(
@@ -60,7 +60,7 @@ Item.init(
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM('Disponible', 'Lavandería', 'Prestado'),
+      type: DataTypes.ENUM('Disponible', 'Colada', 'Prestado'),
       allowNull: false,
       defaultValue: 'Disponible',
     },

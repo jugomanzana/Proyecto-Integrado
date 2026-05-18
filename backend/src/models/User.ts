@@ -2,11 +2,15 @@ import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/database.js';
 
 export class User extends Model {
-  public id!: number;
-  public username!: string;
-  public email!: string;
-  public password!: string;
-  public role!: 'Admin' | 'User';
+  declare id: number;
+  declare username: string;
+  declare email: string;
+  declare password: string;
+  declare role: 'Admin' | 'User';
+  declare avatarUrl: string | null;
+  declare firstName: string | null;
+  declare lastName: string | null;
+  declare birthDate: string | null;
 }
 
 User.init(
@@ -34,6 +38,22 @@ User.init(
       type: DataTypes.ENUM('Admin', 'User'),
       defaultValue: 'User',
       allowNull: false,
+    },
+    avatarUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    birthDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
     },
   },
   {

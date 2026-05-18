@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import api from '../services/api';
 import type { Prenda } from '../models/interfaces';
+import { useNotification } from '../hooks/useNotification';
 
 // ============================================================
 // VIEWMODEL: useItems
@@ -23,6 +24,7 @@ interface CreateItemPayload {
 type UpdateItemPayload = Partial<CreateItemPayload>;
 
 export const useItems = () => {
+  const { notify } = useNotification();
   const [items,   setItems]   = useState<Prenda[]>([]);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
@@ -49,7 +51,9 @@ export const useItems = () => {
       setItems(data);
       setHasMore(data.length === activeLimit);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al cargar las prendas');
+      const msg = err.response?.data?.message || 'Error al cargar las prendas';
+      setError(msg);
+      notify.error(msg);
     } finally {
       setLoading(false);
     }
@@ -107,9 +111,12 @@ export const useItems = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setItems((prev) => [data, ...prev]);
+      notify.success('Prenda añadida al armario');
       return data;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al crear la prenda');
+      const msg = err.response?.data?.message || 'Error al crear la prenda';
+      setError(msg);
+      notify.error(msg);
       return null;
     } finally {
       setLoading(false);
@@ -136,9 +143,12 @@ export const useItems = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setItems((prev) => prev.map((item) => (item.id === id ? data : item)));
+      notify.success('Prenda actualizada');
       return data;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar la prenda');
+      const msg = err.response?.data?.message || 'Error al actualizar la prenda';
+      setError(msg);
+      notify.error(msg);
       return null;
     } finally {
       setLoading(false);
@@ -152,9 +162,12 @@ export const useItems = () => {
     try {
       await api.delete(`/items/${id}`);
       setItems((prev) => prev.filter((item) => item.id !== id));
+      notify.success('Prenda eliminada');
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al eliminar la prenda');
+      const msg = err.response?.data?.message || 'Error al eliminar la prenda';
+      setError(msg);
+      notify.error(msg);
       return false;
     } finally {
       setLoading(false);

@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { Op } from 'sequelize';
 import type { AuthRequest } from '../middlewares/auth.middleware.js';
 import { hashPassword, comparePassword, generateToken } from '../utils/auth.utils.js';
 import { deleteLocalFile } from '../utils/file.utils.js';
@@ -27,7 +28,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({
       message: 'User registered successfully',
-      user: { id: newUser.id, username: newUser.username, email: newUser.email, role: newUser.role },
+      user: { 
+        id: newUser.id, 
+        username: newUser.username, 
+        email: newUser.email, 
+        role: newUser.role, 
+        avatarUrl: newUser.avatarUrl,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        birthDate: newUser.birthDate
+      },
     });
   } catch (error) {
     console.error('Register error:', error);
@@ -37,17 +47,24 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({
+      where: {
+        [Op.or]: [
+          { email: identifier },
+          { username: identifier }
+        ]
+      }
+    });
     if (!user) {
-      res.status(400).json({ message: 'Invalid credentials' });
+      res.status(400).json({ message: 'Credenciales inválidas' });
       return;
     }
 
     const isMatch = await comparePassword(password, user.password);
     if (!isMatch) {
-      res.status(400).json({ message: 'Invalid credentials' });
+      res.status(400).json({ message: 'Credenciales inválidas' });
       return;
     }
 
@@ -61,7 +78,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       message: 'Login successful',
       token,
-      user: { id: user.id, username: user.username, email: user.email, role: user.role },
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        email: user.email, 
+        role: user.role, 
+        avatarUrl: user.avatarUrl,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        birthDate: user.birthDate
+      },
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -73,7 +99,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const user = await User.findByPk(req.user!.id, {
-      attributes: ['id', 'username', 'email', 'role'],
+      attributes: ['id', 'username', 'email', 'role', 'avatarUrl', 'firstName', 'lastName', 'birthDate'],
     });
 
     if (!user) {
@@ -91,7 +117,7 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
 /** PUT /api/auth/profile — Actualiza username y email */
 export const updateProfile = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const { username, email } = req.body;
+    const { username, email, firstName, lastName, birthDate } = req.body;
     
     // Verificar si el email ya existe en otro usuario
     const existingUser = await User.findOne({ where: { email } });
@@ -106,8 +132,40 @@ export const updateProfile = async (req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    await user.update({ username, email });
-    res.status(200).json({ id: user.id, username: user.username, email: user.email, role: user.role });
+    let avatarUrl = user.avatarUrl;
+    if (req.file) {
+      if (user.avatarUrl) {
+        deleteLocalFile(user.avatarUrl);
+      }
+      const appUrl = `${req.protocol}://${req.get('host')}`;
+      avatarUrl = `${appUrl}/uploads/${req.file.filename}`;
+    }
+
+    // Si la fecha de nacimiento ya estaba establecida en la base de datos, ignorar cualquier cambio
+    let finalBirthDate = user.birthDate;
+    if (!user.birthDate) {
+      finalBirthDate = birthDate === '' || birthDate === undefined ? null : birthDate;
+    }
+
+    await user.update({ 
+      username, 
+      email, 
+      avatarUrl, 
+      firstName: firstName || null, 
+      lastName: lastName || null, 
+      birthDate: finalBirthDate 
+    });
+    
+    res.status(200).json({ 
+      id: user.id, 
+      username: user.username, 
+      email: user.email, 
+      role: user.role, 
+      avatarUrl: user.avatarUrl,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      birthDate: user.birthDate
+    });
   } catch (error) {
     console.error('updateProfile error:', error);
     res.status(500).json({ message: 'Error al actualizar el perfil' });
@@ -189,6 +247,12 @@ export const deleteAccount = async (req: AuthRequest, res: Response): Promise<vo
   try {
     const userId = req.user!.id;
     
+    // 0. Borrar avatar local del usuario
+    const user = await User.findByPk(userId);
+    if (user && user.avatarUrl) {
+      deleteLocalFile(user.avatarUrl);
+    }
+
     // 1. Borrar fotos locales asociadas a los items
     const items = await Item.findAll({ where: { userId } });
     items.forEach(item => deleteLocalFile(item.imageUrl));

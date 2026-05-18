@@ -19,7 +19,7 @@ const router = Router();
 
 // Valores de enums en español
 const SEASONS  = ['Primavera', 'Verano', 'Otoño', 'Invierno', 'Todo el año'] as const;
-const STATUSES = ['Disponible', 'Lavandería', 'Prestado'] as const;
+const STATUSES = ['Disponible', 'Colada', 'Prestado'] as const;
 
 const createItemSchema = z.object({
   body: z.object({

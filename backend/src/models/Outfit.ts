@@ -3,11 +3,11 @@ import sequelize from '../config/database.js';
 import { User } from './User.js';
 
 export class Outfit extends Model {
-  public id!: number;
-  public userId!: number;
-  public name!: string;
-  public description!: string;
-  public itemIds!: number[]; // Storing JSON array of Item IDs for simplicity
+  declare id: number;
+  declare userId: number;
+  declare name: string;
+  declare description: string;
+  declare itemIds: number[]; // Storing JSON array of Item IDs for simplicity
 }
 
 Outfit.init(
@@ -37,6 +37,17 @@ Outfit.init(
       type: DataTypes.JSON,
       allowNull: false,
       defaultValue: [],
+      get() {
+        const rawValue = this.getDataValue('itemIds');
+        if (!rawValue) return [];
+        // Si el driver de MySQL lo devuelve como String, lo parseamos a Array numérico real
+        return typeof rawValue === 'string' ? JSON.parse(rawValue) : rawValue;
+      },
+      set(value) {
+        // Nos aseguramos de que siempre guarde la estructura limpia (evita dobles stringificaciones)
+        const newValue = typeof value === 'string' ? JSON.parse(value) : value;
+        this.setDataValue('itemIds', newValue);
+      },
     },
   },
   {
