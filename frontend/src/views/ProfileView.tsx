@@ -19,25 +19,25 @@ import { ConfirmationModal } from '../components/molecules';
 export const ProfileView: React.FC = () => {
   const { user, updateProfile, updatePassword, fetchUserStats, deleteAccount, error: authError } = useAuth();
   const [stats, setStats] = useState<{ totalItems: number; totalOutfits: number; mostUsedItemName?: string } | null>(null);
-  
+
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [birthDate, setBirthDate] = useState('');
-  
+
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
-  
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  
+
   const [successMsg, setSuccessMsg] = useState('');
   const [localError, setLocalError] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  
+
   useEffect(() => {
     if (user) {
       setUsername(prev => prev || user.username);
@@ -87,7 +87,7 @@ export const ProfileView: React.FC = () => {
     e.preventDefault();
     setLocalError('');
     setSuccessMsg('');
-    
+
     if (newPassword.length < 6) {
       setLocalError('La nueva contraseña debe tener al menos 6 caracteres.');
       return;
@@ -145,7 +145,7 @@ export const ProfileView: React.FC = () => {
         )}
 
         <div className="max-w-2xl mx-auto w-full">
-          
+
           {/* Datos Personales */}
           <section className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-warm-beige space-y-6">
             <div className="flex flex-col sm:flex-row items-center gap-6 pb-4 border-b border-warm-beige">
@@ -155,11 +155,11 @@ export const ProfileView: React.FC = () => {
                 ) : (
                   <Avatar size="xl" src={null} alt={username || 'A'} className="w-full h-full" />
                 )}
-                
+
                 <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/55 text-white text-xs font-semibold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer select-none">
                   <span>Editar</span>
                 </label>
-                
+
                 <input
                   id="avatar-upload"
                   type="file"
@@ -297,7 +297,7 @@ export const ProfileView: React.FC = () => {
               }}
               className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
             />
-            
+
             {/* Contenido del Modal */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 16 }}
@@ -312,7 +312,7 @@ export const ProfileView: React.FC = () => {
                   Por seguridad, introduce tu contraseña actual y luego define tu nueva contraseña.
                 </p>
               </div>
-              
+
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <FormField
                   id="currentPassword"
@@ -331,7 +331,7 @@ export const ProfileView: React.FC = () => {
                   required
                   helper="Mínimo 6 caracteres"
                 />
-                
+
                 <div className="pt-4 flex items-center justify-end gap-3 border-t border-warm-beige">
                   <button
                     type="button"

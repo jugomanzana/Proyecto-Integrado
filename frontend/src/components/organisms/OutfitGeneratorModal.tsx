@@ -15,10 +15,10 @@ import type { Prenda } from '../../models/interfaces';
 type Season = 'Primavera' | 'Verano' | 'Otoño' | 'Invierno';
 
 interface OutfitGeneratorModalProps {
-  isOpen:   boolean;
-  items:    Prenda[];
-  onClose:  () => void;
-  onSave:   (name: string, itemIds: number[]) => Promise<boolean>;
+  isOpen: boolean;
+  items: Prenda[];
+  onClose: () => void;
+  onSave: (name: string, itemIds: number[]) => Promise<boolean>;
   loading?: boolean;
 }
 
@@ -27,8 +27,8 @@ interface OutfitGeneratorModalProps {
 /** Detecta la temporada actual según el mes del sistema */
 function detectCurrentSeason(): Season {
   const month = new Date().getMonth() + 1; // 1-12
-  if (month >= 3 && month <= 5)  return 'Primavera';
-  if (month >= 6 && month <= 8)  return 'Verano';
+  if (month >= 3 && month <= 5) return 'Primavera';
+  if (month >= 6 && month <= 8) return 'Verano';
   if (month >= 9 && month <= 11) return 'Otoño';
   return 'Invierno';
 }
@@ -53,7 +53,7 @@ function filterBySeason(items: Prenda[], season: Season): Prenda[] {
  * 3. Si alguna categoría no tiene stock en esa temporada, usa toda la colección como fallback
  */
 function generateOutfit(allItems: Prenda[], season: Season): Prenda[] {
-  const seasonal   = filterBySeason(allItems, season);
+  const seasonal = filterBySeason(allItems, season);
   // Para cada categoría: intentamos en seasonal, si no hay, caemos a todo el armario
   const pool = (category: string) => {
     const inSeason = seasonal.filter((i) => i.category === category);
@@ -76,9 +76,9 @@ function generateOutfit(allItems: Prenda[], season: Season): Prenda[] {
   // 2. Top: Camiseta o Sudadera con igual probabilidad, según temporada
   //    En Invierno/Otoño favorecemos ligeramente Sudadera; en Verano/Primavera, Camiseta
   const preferSudadera = season === 'Invierno' || season === 'Otoño';
-  const topPrimary  = preferSudadera ? 'Sudadera' : 'Camiseta';
+  const topPrimary = preferSudadera ? 'Sudadera' : 'Camiseta';
   const topFallback = preferSudadera ? 'Camiseta' : 'Sudadera';
-  const topItems    = pool(topPrimary).length ? pool(topPrimary) : pool(topFallback);
+  const topItems = pool(topPrimary).length ? pool(topPrimary) : pool(topFallback);
   addItem(pickRandom(topItems));
 
   // 3. Zapatos (obligatorio si existe)
@@ -95,10 +95,10 @@ function generateOutfit(allItems: Prenda[], season: Season): Prenda[] {
 const SEASONS: Season[] = ['Primavera', 'Verano', 'Otoño', 'Invierno'];
 
 const SEASON_META: Record<Season, { emoji: string; color: string }> = {
-  Primavera: { emoji: '🌸', color: 'bg-pink-50  border-pink-200  text-pink-700'  },
-  Verano:    { emoji: '☀️', color: 'bg-amber-50 border-amber-200 text-amber-700' },
-  Otoño:     { emoji: '🍂', color: 'bg-orange-50 border-orange-200 text-orange-700' },
-  Invierno:  { emoji: '❄️', color: 'bg-sky-50   border-sky-200   text-sky-700'   },
+  Primavera: { emoji: '🌸', color: 'bg-pink-50  border-pink-200  text-pink-700' },
+  Verano: { emoji: '☀️', color: 'bg-amber-50 border-amber-200 text-amber-700' },
+  Otoño: { emoji: '🍂', color: 'bg-orange-50 border-orange-200 text-orange-700' },
+  Invierno: { emoji: '❄️', color: 'bg-sky-50   border-sky-200   text-sky-700' },
 };
 
 export const OutfitGeneratorModal: React.FC<OutfitGeneratorModalProps> = ({
@@ -108,11 +108,11 @@ export const OutfitGeneratorModal: React.FC<OutfitGeneratorModalProps> = ({
   onSave,
   loading = false,
 }) => {
-  const [season,    setSeason]    = useState<Season>(detectCurrentSeason);
+  const [season, setSeason] = useState<Season>(detectCurrentSeason);
   const [generated, setGenerated] = useState<Prenda[]>([]);
   const [hasGenerated, setHasGenerated] = useState(false);
-  const [outfitName, setOutfitName]     = useState('');
-  const [saving,    setSaving]          = useState(false);
+  const [outfitName, setOutfitName] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const handleGenerate = useCallback(() => {
     const result = generateOutfit(items, season);

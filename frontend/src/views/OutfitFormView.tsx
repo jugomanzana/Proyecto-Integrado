@@ -76,6 +76,7 @@ export const OutfitFormView: React.FC = () => {
       description: description || undefined,
       itemIds: selectedItemIds
     };
+
     let success;
     if (isEditing && id) {
       success = await updateOutfit(Number(id), payload);

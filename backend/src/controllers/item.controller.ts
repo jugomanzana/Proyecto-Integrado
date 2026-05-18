@@ -18,15 +18,15 @@ export const getItems = async (req: AuthRequest, res: Response): Promise<void> =
 
     const where: any = { userId };
     if (category && category !== 'Todas') where.category = category;
-    if (status)   where.status   = status;
-    if (season && season !== 'Todas')   where.season   = season;
-    if (color && color !== 'Todos')     where.color    = color;
+    if (status) where.status = status;
+    if (season && season !== 'Todas') where.season = season;
+    if (color && color !== 'Todos') where.color = color;
 
     if (search) {
       const q = `%${search}%`;
       where[Op.or] = [
-        { name:     { [Op.like]: q } },
-        { color:    { [Op.like]: q } },
+        { name: { [Op.like]: q } },
+        { color: { [Op.like]: q } },
         { category: { [Op.like]: q } },
       ];
     }
@@ -36,7 +36,7 @@ export const getItems = async (req: AuthRequest, res: Response): Promise<void> =
       order: [['createdAt', 'DESC']],
     };
 
-    if (limit)  queryOptions.limit  = parseInt(limit as string, 10);
+    if (limit) queryOptions.limit = parseInt(limit as string, 10);
     if (offset) queryOptions.offset = parseInt(offset as string, 10);
 
     const items = await Item.findAll(queryOptions);
@@ -70,7 +70,7 @@ export const getItemById = async (req: AuthRequest, res: Response): Promise<void
 export const createItem = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { name, category, color, season, size, fabric, status } = req.body;
-    
+
     const appUrl = process.env.APP_URL || 'http://localhost:3000';
     const fileUrl = req.file ? `${appUrl}/uploads/${req.file.filename}` : undefined;
     const finalImageUrl = fileUrl || req.body.imageUrl || null;
@@ -88,8 +88,8 @@ export const createItem = async (req: AuthRequest, res: Response): Promise<void>
       imageUrl: finalImageUrl,
       season,
       size,
-      fabric:   fabric   || null,
-      status:   status   || 'Disponible',
+      fabric: fabric || null,
+      status: status || 'Disponible',
     });
 
     res.status(201).json(item);
@@ -132,17 +132,17 @@ export const updateItem = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    await item.update({ 
-      name, 
-      category, 
-      color, 
-      imageUrl: finalImageUrl, 
-      season, 
+    await item.update({
+      name,
+      category,
+      color,
+      imageUrl: finalImageUrl,
+      season,
       size,
-      fabric: fabric || null, 
-      status 
+      fabric: fabric || null,
+      status
     });
-    
+
     res.status(200).json(item);
   } catch (error) {
     console.error('[items] updateItem error:', error);
